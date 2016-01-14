@@ -25,5 +25,15 @@ class ApplicationSpec extends Specification {
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
     }
+
+    "request a short URL  " in new WithApplication{
+
+      val f = FakeRequest(POST, "/shorten").withFormUrlEncodedBody(
+        "originalUrl"-> "https://google.com")
+      val home = route(f).get
+
+      status(home) must equalTo(BAD_REQUEST)
+      contentAsString(home) contains("localssshost")
+    }
   }
 }

@@ -1,7 +1,6 @@
 package dal
 
 
-package dal
 
 import javax.inject.{ Inject, Singleton }
 import play.api.db.slick.DatabaseConfigProvider
@@ -40,31 +39,30 @@ class ShortUrlRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(im
 
   private val shorturls = TableQuery[ShortUrlTable]
 
-  def insert(shorturl: ShortUrl): Future[ShortUrl] =
-    try {
+  def insert(shorturl: ShortUrl): ShortUrl = {
+    db.run(shorturls += shorturl)
+    shorturl
+  }
 
-      db.run(shorturls += shorturl)
-      findById(shorturl.id)
-    }
-    finally {
-      db.close
-    }
-
-//  def filterQueryById(id: String): Query[ShortUrlTable,ShortUrl, Seq] =
-//    shorturls.filter(_.id === id)
-//
-//
+  //  def filterQueryById(id: String): Query[ShortUrlTable,ShortUrl, Seq] =
+  //    shorturls.filter(_.id === id)
+  //
+  //
   def findById(id: String): Future[ShortUrl] =
-    try db.run(shorturls.filter(_.id===id).result.head)
-    finally db.close
-//
-//
-//  def filterQueryByUrl(url: String): Query[ShortUrlTable,ShortUrl, Seq] =
-//    shorturls.filter(_.originalUrl === url)
-//
+    db.run(shorturls.filter(_.id===id).result.head).recover{
+      case _ =>
+        new ShortUrl("","")
+    }
+
+  //
+  //
+  //  def filterQueryByUrl(url: String): Query[ShortUrlTable,ShortUrl, Seq] =
+  //    shorturls.filter(_.originalUrl === url)
+  //
   def findByURL(originalUrl: String): Future[ShortUrl] =
-    try db.run(shorturls.filter(_.originalUrl === originalUrl).result.head)
-    finally db.close
+    db.run(shorturls.filter(_.originalUrl === originalUrl).result.head).recover{
+      case _ => ShortUrl("","")
+    }
 
 
 }
